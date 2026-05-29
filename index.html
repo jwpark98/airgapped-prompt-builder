@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AirGap PromptForge</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230f172a'/><text x='50' y='53' font-size='65' text-anchor='middle' dominant-baseline='middle'>⚡</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#f0f2f5;
+--surface:#ffffff;
+--surface-2:#f8fafc;
+--surface-3:#f1f5f9;
+--border:#e2e8f0;
+--border-2:#cbd5e1;
+--text-1:#0f172a;
+--text-2:#334155;
+--text-3:#64748b;
+--text-4:#94a3b8;
+--accent:#2563eb;
+--accent-h:#1d4ed8;
+--accent-light:rgba(37,99,235,.08);
+--suc:#059669;
+--suc-light:rgba(5,150,105,.08);
+--war:#d97706;
+--war-light:rgba(217,119,6,.08);
+--react:#60a5fa;
+--react-light:rgba(96,165,250,.08);
+--r-xs:6px;--r-sm:8px;--r-md:12px;--r-lg:16px;--r-xl:20px;
+--shadow-xs:0 1px 2px rgba(0,0,0,.05);
+--shadow-sm:0 1px 4px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04);
+--shadow-md:0 4px 16px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.04);
+--header-h:68px;
+--transition:.15s ease;
+}
+html{font-size:14px;-webkit-font-smoothing:antialiased}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo',sans-serif;background:var(--bg);color:var(--text-1);line-height:1.6;min-height:100vh}
+
+/* ── HEADER ── */
+.hdr{position:sticky;top:0;z-index:100;height:var(--header-h);background:rgba(255,255,255,.97);backdrop-filter:blur(16px) saturate(180%);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0}
+.hdr-inner{max-width:1440px;margin:0 auto;width:100%;display:flex;align-items:center;gap:16px;padding:0 28px}
+.logo{width:38px;height:38px;border-radius:10px;background:var(--text-1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:var(--shadow-sm)}
+.hdr-text{flex:1;min-width:0}
+.hdr-title{font-size:18px;font-weight:800;color:var(--text-1);letter-spacing:-.03em;line-height:1.2}
+.hdr-title span.brand-air{color:var(--accent)}
+.hdr-sub{font-size:11px;color:var(--text-4);font-family:'Menlo','Consolas','Courier New',monospace;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.01em}
+
+/* ── LAYOUT ── */
+.main{max-width:1440px;margin:0 auto;padding:24px 28px 80px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 24px;box-shadow:var(--shadow-xs);transition:box-shadow var(--transition)}
+.card:hover{box-shadow:var(--shadow-sm)}
+.card+.card,.card+.card-grid{margin-top:13px}
+.card-title{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:13px;display:flex;align-items:center;gap:6px}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.card-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+
+/* ── FIELDS ── */
+.field{display:flex;flex-direction:column;gap:6px}
+.field+.field{margin-top:12px}
+.field-label{font-size:10px;font-weight:700;color:var(--text-4);text-transform:uppercase;letter-spacing:.07em}
+.input,.textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 11px;font-size:13px;color:var(--text-1);font-family:inherit;transition:border-color var(--transition),box-shadow var(--transition),background var(--transition);outline:none;resize:vertical;line-height:1.55}
+.input::placeholder,.textarea::placeholder{color:var(--text-4);font-size:12px}
+.input:focus,.textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);background:var(--surface)}
+.textarea{min-height:auto}
+select.input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");background-repeat:no-repeat;background-position:right 10px center;background-size:14px}
+
+/* ── CHECKBOXES ── */
+.checks{display:flex;flex-direction:column;gap:1px}
+.chk{display:flex;align-items:center;gap:9px;padding:5px 6px;border-radius:var(--r-xs);cursor:pointer;transition:background var(--transition);user-select:none}
+.chk:hover{background:var(--surface-3)}
+.chk input[type=checkbox]{width:14px;height:14px;border-radius:3px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;margin:0}
+.chk-label{font-size:12px;color:var(--text-2);transition:color var(--transition)}
+.chk:hover .chk-label{color:var(--text-1)}
+.chk input:checked ~ .chk-label{color:var(--text-1);font-weight:500}
+
+/* ── STACK PILL ── */
+.stack-area{margin-top:14px;padding-top:13px;border-top:1px solid var(--border)}
+.stack-area-label{font-size:10px;font-weight:700;color:var(--text-4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.stack-pill{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:4px 11px;font-size:11px;font-weight:600;border:1px solid;transition:all var(--transition)}
+.stack-pill.vanilla{background:var(--suc-light);color:var(--suc);border-color:rgba(5,150,105,.2)}
+.stack-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;transition:background var(--transition)}
+.stack-dot.vanilla{background:var(--suc)}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:14px 0}
+
+/* ── PREVIEW PANEL ── */
+.preview{position:sticky;top:calc(var(--header-h) + 16px);background:#0c1221;border:1px solid #1a2540;border-radius:var(--r-xl);overflow:hidden;display:flex;flex-direction:column;height:calc(100vh - var(--header-h) - 36px);min-height:580px;box-shadow:0 8px 32px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.12)}
+.preview-hdr{padding:11px 18px;border-bottom:1px solid #1a2540;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:rgba(255,255,255,.02)}
+.preview-label{font-size:10px;font-weight:700;color:#3d5068;text-transform:uppercase;letter-spacing:.12em;font-family:'Menlo','Consolas',monospace}
+.preview-stack{display:flex;align-items:center;gap:6px;font-size:11px;color:#3d5068;font-family:'Menlo','Consolas',monospace}
+.preview-dot{width:5px;height:5px;border-radius:50%;transition:background .3s}
+.preview-dot.vanilla{background:#059669}
+.preview-body{flex:1;overflow-y:auto;padding:18px 20px;font-family:'Menlo','Consolas','Courier New',monospace;font-size:12px;color:#8ea8c3;line-height:1.75;white-space:pre-wrap;word-break:break-word}
+.preview-body::-webkit-scrollbar{width:4px}
+.preview-body::-webkit-scrollbar-track{background:transparent}
+.preview-body::-webkit-scrollbar-thumb{background:#1e2d40;border-radius:4px}
+.preview-body::-webkit-scrollbar-thumb:hover{background:#263550}
+.preview-footer{padding:13px 16px;border-top:1px solid #1a2540;flex-shrink:0;display:flex;flex-direction:column;gap:10px;background:rgba(0,0,0,.15)}
+.preview-note{display:flex;align-items:flex-start;gap:7px;font-size:11px;color:#3d5068;line-height:1.5}
+.btn-row{display:flex;gap:8px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--r-sm);font-size:12px;font-weight:600;cursor:pointer;transition:all var(--transition);border:none;outline:none;letter-spacing:.01em;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{box-shadow:0 0 0 3px var(--accent-light)}
+.btn-ghost{background:#111c2e;color:#64748b;border:1px solid #1e2d40;padding:9px 14px}
+.btn-ghost:hover{background:#172236;color:#8ea8c3;border-color:#263550}
+.btn-primary{background:var(--accent);color:#fff;padding:9px 0;flex:1;box-shadow:0 2px 8px rgba(37,99,235,.25)}
+.btn-primary:hover{background:var(--accent-h);transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,99,235,.35)}
+
+/* ── SCROLL ── */
+.left-col{overflow-anchor:none;height:calc(100vh - var(--header-h) - 36px);min-height:580px;overflow-y:visible;padding-right:8px;padding-bottom:16px}
+html{scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+
+/* ── RESPONSIVE ── */
+@media(max-width:960px){
+  .main{grid-template-columns:1fr;padding:16px 16px 60px}
+  .preview{position:static;height:480px;min-height:420px}
+  .card-grid,.card-grid-3,.card-grid-4{grid-template-columns:1fr 1fr}
+  .hdr-inner{padding:0 16px}
+  .hdr-title{font-size:16px}
+}
+@media(max-width:520px){
+  .card-grid,.card-grid-3,.card-grid-4{grid-template-columns:1fr}
+  .hdr-title{font-size:15px}
+}
+
+/* ── LANG SELECTOR ── */
+.lang-select{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:5px 28px 5px 10px;font-size:11px;font-weight:600;color:var(--text-2);cursor:pointer;appearance:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");background-repeat:no-repeat;background-position:right 7px center;background-size:12px;outline:none;transition:border-color var(--transition)}
+.lang-select:hover{border-color:var(--accent)}
+.lang-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+
+/* ── HISTORY PANEL ── */
+.history-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-xs);overflow:hidden;margin-top:14px}
+.history-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;transition:background var(--transition)}
+.history-hdr:hover{background:var(--surface-2)}
+.history-hdr-left{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.09em}
+.history-badge{background:var(--accent-light);color:var(--accent);border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;min-width:20px;text-align:center}
+.history-chevron{width:14px;height:14px;color:var(--text-4);transition:transform .2s}
+.history-chevron.open{transform:rotate(180deg)}
+.history-body{max-height:0;overflow:hidden;transition:max-height .25s ease}
+.history-body.open{max-height:420px;overflow-y:auto}
+.history-search-wrap{padding:10px 14px; border-bottom:1px solid var(--border);}
+.history-empty{padding:20px;text-align:center;font-size:12px;color:var(--text-4)}
+.hist-item{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border);transition:background var(--transition)}
+.hist-item:last-child{border-bottom:none}
+.hist-item:hover{background:var(--surface-2)}
+.hist-main{flex:1;min-width:0;padding:9px 14px;cursor:pointer}
+.hist-name{font-size:12px;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-meta{font-size:10px;color:var(--text-4);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
+.hist-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--surface-3);color:var(--text-3);text-transform:uppercase;letter-spacing:.04em}
+.hist-del{padding:8px 12px;cursor:pointer;color:var(--text-4);background:none;border:none;font-size:14px;line-height:1;transition:color var(--transition);flex-shrink:0}
+.hist-del:hover{color:#ef4444}
+.history-footer{padding:8px 14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end}
+.btn-hist-clear{font-size:10px;font-weight:600;color:var(--text-4);background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:4px;transition:color var(--transition),background var(--transition)}
+.btn-hist-clear:hover{color:#ef4444;background:rgba(239,68,68,.08)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.card{animation:fadeIn .2s ease both}
+.card:nth-child(1){animation-delay:.03s}
+.card:nth-child(2){animation-delay:.06s}
+.card:nth-child(3){animation-delay:.09s}
+.card-grid > .card:nth-child(1){animation-delay:.12s}
+.card-grid > .card:nth-child(2){animation-delay:.15s}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.updating{animation:pulse .4s ease}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-inner">
+    <div class="logo">⚡</div>
+    <div class="hdr-text">
+      <div class="hdr-title" data-i18n="hdrTitle"><span class="brand-air">AirGap</span> PromptForge</div>
+      <div class="hdr-sub" data-i18n="hdrSub">Offline Web App Prompt Generator</div>
+    </div>
+    <select class="lang-select" id="langSelect">
+      <option value="ko">🇰🇷 한국어</option>
+      <option value="en" selected>🇺🇸 English</option>
+      <option value="ja">🇯🇵 日本語</option>
+      <option value="zh">🇨🇳 中文</option>
+      <option value="de">🇩🇪 Deutsch</option>
+      <option value="fr">🇫🇷 Français</option>
+    </select>
+    <button class="btn" id="btnReset" data-i18n="btnReset" style="background:var(--surface-2); color:var(--text-1); border:1px solid var(--border); padding:5px 12px; font-size:11px; height:28px;">🔄 초기화</button>
+    <button class="btn" id="btnHelp" data-i18n="btnHelp" style="background:var(--surface-2); color:var(--text-1); border:1px solid var(--border); padding:5px 12px; font-size:11px; height:28px;">❓ 도움말</button>
+  </div>
+</header>
+
+<main class="main">
+  <div class="left-col">
+
+    <div class="card">
+      <div class="card-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+        <span data-i18n="secProject">프로젝트 기본 정보</span>
+      </div>
+      <div class="field">
+        <span class="field-label" data-i18n="lblAppName">앱 이름</span>
+        <input class="input" id="f-appName" data-i18n-placeholder="phAppName" placeholder="예) 터빈 효율성 동적 시뮬레이터"/>
+      </div>
+      <div class="field">
+        <span class="field-label" data-i18n="lblPurpose">앱 목적</span>
+        <textarea class="textarea" id="f-purpose" rows="1" data-i18n-placeholder="phPurpose" placeholder="예) 공장 측정 데이터 기반 실시간 효율 계산 및 시각화"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <span data-i18n="secFeatures">핵심 기능 요구사항</span>
+      </div>
+      <div class="field">
+        <span class="field-label" data-i18n="lblCoreFeatures">구현되어야 할 기능 (상세히)</span>
+        <textarea class="textarea" id="f-coreFeatures" rows="3" data-i18n-placeholder="phFeatures" placeholder="- 기능 1: 복합 공식 계산 및 실시간 반영&#10;- 기능 2: 계산 히스토리 목록 표시&#10;- 기능 3: 결과 차트 자동 업데이트"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+        <span data-i18n="secOutput">출력 및 스타일 설정</span>
+      </div>
+      <div class="card-grid-4" style="margin-top:0">
+        <div class="field" style="margin-top:0;">
+          <span class="field-label" data-i18n="lblAiService">AI 서비스</span>
+          <select class="input" id="f-aiService">
+            <option value="claude" selected data-i18n="optAiClaude">Claude (Anthropic)</option>
+            <option value="chatgpt" data-i18n="optAiChatGPT">ChatGPT (OpenAI)</option>
+            <option value="gemini" data-i18n="optAiGemini">Gemini (Google)</option>
+            <option value="grok" data-i18n="optAiGrok">Grok (xAI)</option>
+            <option value="aimode" data-i18n="optAiMode">AI Mode (Google)</option>
+          </select>
+        </div>
+        <div class="field" style="margin-top: 0;" title="">
+          <span class="field-label" data-i18n="lblParts">출력 파트 분할 <span id="partsAutoLabel" style="font-size:9px;font-weight:700;letter-spacing:.06em;color:var(--suc);transition:color .2s;cursor:help;" title="자동 추천 중">AUTO</span></span>
+          <select class="input" id="f-parts">
+            <option value="1" data-i18n="optParts1">1개 파트 (아주 단순)</option>
+            <option value="2" data-i18n="optParts2">2개 파트 (단순)</option>
+            <option value="3" selected data-i18n="optParts3">3개 파트 (기본 앱)</option>
+            <option value="4" data-i18n="optParts4">4개 파트 (복잡한 앱)</option>
+            <option value="5" data-i18n="optParts5">5개 파트 (매우 복잡한 앱)</option>
+          </select>
+        </div>
+        <div class="field" style="margin-top: 0;" title="">
+          <span class="field-label" data-i18n="lblTheme">UI 스타일 테마</span>
+          <select class="input" id="f-theme">
+            <option value="dark" selected data-i18n="optThemeDark">다크 모드 (기본)</option>
+            <option value="light" data-i18n="optThemeLight">라이트 모드 (사무/문서용)</option>
+            <option value="industrial" data-i18n="optThemeIndustrial">고대비 (생산 현장용)</option>
+          </select>
+        </div>
+        <div class="field" style="margin-top: 0;" title="">
+          <span class="field-label" data-i18n="lblDbMode">데이터 저장 방식 <span id="dbModeAutoLabel" style="font-size:9px;font-weight:700;letter-spacing:.06em;color:var(--suc);transition:color .2s;cursor:help;" title="자동 추천 중">AUTO</span></span>
+          <select class="input" id="f-dbMode">
+            <option value="single" selected data-i18n="optDbSingle">단건 저장 (덮어쓰기)</option>
+            <option value="list" data-i18n="optDbList">시계열 누적 (차트/필터)</option>
+            <option value="scenario" data-i18n="optDbScenario">선택 저장 (시나리오/모달)</option>
+          </select>
+        </div>
+      </div><!-- /card-grid-4 -->
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card" style="margin-top:0">
+        <div class="card-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+          <span data-i18n="secIO">데이터 입출력</span>
+        </div>
+        <div class="checks">
+          <label class="chk"><input type="checkbox" id="io-apiSync" checked/><span class="chk-label" style="color:var(--accent); font-weight:700;" data-i18n="chkDbSync">DB 연동</span></label>
+          <label class="chk"><input type="checkbox" id="io-json"/><span class="chk-label" data-i18n="chkJson">JSON 저장 / 불러오기</span></label>
+          <label class="chk"><input type="checkbox" id="io-csv"/><span class="chk-label" data-i18n="chkCsv">CSV 저장 / 불러오기</span></label>
+          <label class="chk"><input type="checkbox" id="io-xlsx" checked/><span class="chk-label" data-i18n="chkXlsx">Excel (XLSX) 저장</span></label>
+          <label class="chk"><input type="checkbox" id="io-clipboard"/><span class="chk-label" data-i18n="chkClipboard">클립보드 복사 버튼</span></label>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:0">
+        <div class="card-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 17h7M17.5 14v6"/></svg>
+          <span data-i18n="secLayout">UI / UX 옵션</span>
+        </div>
+        <div class="checks">
+          <label class="chk" id="chk-themeToggle-wrap" title="">
+            <input type="checkbox" id="layout-themeToggle" checked/>
+            <span class="chk-label" data-i18n="chkThemeToggle">런타임 테마 전환 버튼</span>
+          </label>
+          <label class="chk"><input type="checkbox" id="layout-responsive" checked/><span class="chk-label" data-i18n="chkResponsive">반응형 (모바일 호환)</span></label>
+          <label class="chk"><input type="checkbox" id="layout-desktopOptimized" checked/><span class="chk-label" data-i18n="chkDesktop">데스크톱 가로 최적화</span></label>
+          <label class="chk"><input type="checkbox" id="layout-print" checked/><span class="chk-label" data-i18n="chkPrint">보고서(Print) 출력</span></label>
+          <label class="chk"><input type="checkbox" id="layout-fontSize" checked/><span class="chk-label" data-i18n="chkFontSize">글자 크기 조절 버튼</span></label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── HISTORY PANEL ── -->
+    <div class="history-panel" id="historyPanel">
+      <div class="history-hdr" id="historyToggle">
+        <div class="history-hdr-left">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span data-i18n="lblHistory">History</span>
+          <span class="history-badge" id="historyCount">0</span>
+        </div>
+        <svg class="history-chevron" id="historyChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="history-body" id="historyBody">
+        <div class="history-search-wrap" id="historySearchWrap" style="display:none;">
+          <input type="text" id="historySearch" class="input" data-i18n-placeholder="phSearchHistory" placeholder="히스토리 검색..." style="padding:4px 10px; font-size:12px;"/>
+        </div>
+        <div class="history-empty" id="historyEmpty">저장된 히스토리가 없습니다.</div>
+        <div id="historyList"></div>
+        <div class="history-footer" id="historyFooter" style="display:none">
+          <button class="btn-hist-clear" id="btnHistClear" data-i18n="btnClearHistory">전체 삭제</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="preview">
+    <div class="preview-hdr">
+      <span class="preview-label">Prompt Preview</span>
+      <div class="preview-stack">
+        <div class="preview-dot vanilla" id="previewDot"></div>
+        <span id="previewStackText">vanilla</span>
+      </div>
+    </div>
+    <div class="preview-body" id="previewBody"></div>
+    <div class="preview-footer">
+      <div class="preview-note">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+        <span data-i18n="previewNote">복사 후 AI에 붙여넣고 실행. 토큰 제약 회피를 위해 파트별로 나뉘어 출력됩니다.</span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="btnTxt">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          TXT
+        </button>
+        <button class="btn btn-primary" id="btnCopy">
+          <svg id="copyIcon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          <span id="copyLabel" data-i18n="btnCopy">클립보드에 복사</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ── HELP MODAL ── -->
+<div id="helpModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:1000; justify-content:center; align-items:center; padding:20px;">
+  <div class="card" style="width:100%; max-width:600px; max-height:85vh; overflow-y:auto; position:relative; background:var(--surface); border:1px solid var(--border); box-shadow:var(--shadow-md); animation:fadeIn 0.2s ease both; display:block; margin-top:0;">
+    <button id="closeHelp" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-3); font-weight:bold; line-height:1;">&times;</button>
+    <h3 id="helpTitle" data-i18n="helpTitle" style="font-size:15px; font-weight:800; color:var(--text-1); margin-bottom:18px; display:flex; align-items:center; gap:8px;">💡 도움말 가이드</h3>
+    
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div>
+        <h4 id="helpSec1Title" data-i18n="helpSec1Title" style="font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px;">1. 개발 배경 및 목적</h4>
+        <p id="helpSec1Body" data-i18n="helpSec1Body" style="font-size:12px; color:var(--text-2); white-space:pre-line; line-height:1.6;"></p>
+      </div>
+      <div style="height:1px; background:var(--border);"></div>
+      <div>
+        <h4 id="helpSec2Title" data-i18n="helpSec2Title" style="font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px;">2. 단계별 입력 가이드</h4>
+        <p id="helpSec2Body" data-i18n="helpSec2Body" style="font-size:12px; color:var(--text-2); white-space:pre-line; line-height:1.6;"></p>
+      </div>
+      <div style="height:1px; background:var(--border);"></div>
+      <div>
+        <h4 id="helpSec3Title" data-i18n="helpSec3Title" style="font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px;">3. 자동화(AUTO) 작동 원리</h4>
+        <p id="helpSec3Body" data-i18n="helpSec3Body" style="font-size:12px; color:var(--text-2); white-space:pre-line; line-height:1.6;"></p>
+      </div>
+      <div style="height:1px; background:var(--border);"></div>
+      <div>
+        <h4 id="helpSec4Title" data-i18n="helpSec4Title" style="font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px;">4. 프롬프트 생성 후 사용법</h4>
+        <p id="helpSec4Body" data-i18n="helpSec4Body" style="font-size:12px; color:var(--text-2); white-space:pre-line; line-height:1.6;"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// i18n DICTIONARY
+// ═══════════════════════════════════════════════════════════════
+const i18n = {
+  ko: {
+    hdrTitle:"AirGap PromptForge",
+    hdrSub:"Offline Web App Prompt Generator · Air-Gapped 환경 특화 (Vanilla JS only)",
+    secProject:"프로젝트 기본 정보",
+    lblAppName:"앱 이름",
+    phAppName:"예) 터빈 효율성 동적 시뮬레이터",
+    lblPurpose:"앱 목적",
+    phPurpose:"예) 공장 측정 데이터 기반 실시간 효율 계산 및 시각화",
+    secFeatures:"핵심 기능 요구사항",
+    lblAiService: "AI 모델",
+    lblCoreFeatures:"구현되어야 할 기능 (상세히)",
+    phFeatures:"- 기능 1: 복합 공식 계산 및 실시간 반영\n- 기능 2: 계산 히스토리 목록 표시\n- 기능 3: 결과 차트 자동 업데이트",
+    secOutput:"출력 및 스타일 설정",
+    lblParts:"출력 파트 분할",
+    optParts1:"1개 파트 (아주 단순)",
+    optParts2:"2개 파트 (단순)",
+    optParts3:"3개 파트 (기본 앱)",
+    optParts4:"4개 파트 (복잡한 앱)",
+    optParts5:"5개 파트 (매우 복잡한 앱)",
+    lblTheme:"UI 스타일 테마",
+    optThemeDark:"다크 모드 (기본)",
+    optThemeLight:"라이트 모드 (사무/문서용)",
+    optThemeIndustrial:"고대비 (생산 현장용)",
+    lblDbMode:"데이터 저장 방식",
+    optDbSingle:"단건 저장 (덮어쓰기)",
+    optDbList:"시계열 누적 (차트/필터)",
+    optDbScenario:"선택 저장 (시나리오/모달)",
+    secIO:"데이터 입출력",
+    chkDbSync:"DB 연동 (Fetch API)",
+    chkJson:"JSON 저장 / 불러오기",
+    chkCsv:"CSV 저장 / 불러오기",
+    chkXlsx:"Excel (XLSX) 저장 / 불러오기",
+    chkImage:"이미지 (PNG) 캡처",
+    chkClipboard:"클립보드 복사 버튼",
+    secLayout:"UI / UX 옵션",
+    chkThemeToggle:"런타임 테마 전환 버튼",
+    chkResponsive:"반응형 (모바일 호환)",
+    chkDesktop:"데스크톱 가로 최적화",
+    chkPrint:"보고서 출력",
+    chkFontSize:"글자 크기 조절 버튼",
+    chkOfflineFallback:"오프라인 폴백 (시스템 폰트/SVG inline)",
+    lblBrowserCompat:"브라우저 호환성",
+    optCompatModern:"모던 (Chrome/Edge 최신)",
+    optCompatEs2018:"ES2018+ (구형 Chromium)",
+    optCompatIe11:"IE11 호환 (var/XHR/폴리필)",
+    lblStack:"기술 스택 (자동)",
+    previewNote:"복사 후 AI에 붙여넣고 실행. 토큰 제약 회피를 위해 파트별로 나뉘어 출력됩니다.",
+    btnCopy:"클립보드에 복사",
+    copyDone:"클립보드에 복사됨",
+    copyFail:"클립보드 복사에 실패함. 텍스트를 직접 선택(Ctrl+A) 후 복사(Ctrl+C) 바람.",
+    btnHelp:"❓ 도움말",
+    btnReset:"🔄 초기화",
+    resetConfirm:"입력된 모든 내용을 초기화하시겠습니까?",
+    phSearchHistory:"히스토리 검색...",
+    historyEmpty:"저장된 히스토리가 없습니다.",
+    searchEmpty:"검색 결과가 없습니다.",
+    helpTitle:"💡 AirGap PromptForge 사용 가이드",
+    helpSec1Title:"1. 개발 배경 및 목적",
+    helpSec1Body:"• 망분리 환경 특화: 사내 보안망(Air-Gapped) 내에서 외부 라이브러리(CDN) 없이 단일 HTML 파일로 동작하는 웹 앱 생성을 지원함.\n• 토큰 한계 극복: AI의 일회성 출력 제한(끊김 현상)을 방지하기 위해 코드를 여러 파트로 분할 제어하여 안전하게 완성을 유도함.",
+    helpSec2Title:"2. 단계별 입력 가이드",
+    helpSec2Body:"• 앱 이름: 직관적인 명칭 입력 (예: 함정 장비 CBM+ 센서 모니터링 대시보드)\n• 앱 목적: 누가, 어떤 상황에서, 무엇을 해결하기 위해 쓰는지 명시함.\n• 핵심 기능: 구현할 기능 로직을 구체적 번호표를 붙여 세부적으로 나열할 때 결과물 품질이 기하급수적으로 상승함.",
+    helpSec3Title:"3. 자동화(AUTO) 작동 원리",
+    helpSec3Body:"• 출력 파트 분할: 입력창 텍스트 길이와 선택된 기능 부하(Excel, API 등)를 실시간 계산하여 안전한 분할 개수(1~5)를 자동 추천함.\n• 데이터 저장 방식: '이력', '누적', '시나리오' 등의 키워드 감지 시 단건 저장에서 시계열 누적/버전 관리 모드로 자동 전환됨.",
+    helpSec4Title:"4. 프롬프트 생성 후 사용법",
+    helpSec4Body:"• Step 1: [클립보드에 복사] 클릭 후 사용할 AI 대화창에 붙여넣기(Ctrl+V)하여 전송함.\n• Step 2: AI가 P1 코드 블록 출력을 완료하고 대기 상태가 되면 대화창에 '계속' 또는 'Next'를 입력하여 다음 파트를 순차 수신함.\n• Step 3: 수신 완료된 모든 파트의 코드(\u0060\u0060\u0060html)를 메모장에 순서대로 이어 붙인 후 'index.html' 파일로 저장하여 실행함.",
+    lblHistory:"히스토리",
+    btnClearHistory:"전체 삭제"
+  },
+  en: {
+    hdrTitle:"AirGap PromptForge",
+    hdrSub:"Offline Web App Prompt Generator · Built for Air-Gapped Environments (Vanilla JS only)",
+    secProject:"Project Info",
+    lblAppName:"App Name",
+    lblAiService: "AI Model",
+    phAppName:"e.g. Turbine Efficiency Dynamic Simulator",
+    lblPurpose:"App Purpose",
+    phPurpose:"e.g. Real-time efficiency calculation and visualization based on factory measurement data",
+    secFeatures:"Core Feature Requirements",
+    lblCoreFeatures:"Features to implement (in detail)",
+    phFeatures:"- Feature 1: Complex formula calculation with real-time update\n- Feature 2: Calculation history list\n- Feature 3: Auto-updating result chart",
+    secOutput:"Output & Style Settings",
+    lblParts:"Output Part Split",
+    optParts1:"1 Part (Very Simple)",
+    optParts2:"2 Parts (Simple)",
+    optParts3:"3 Parts (Standard App)",
+    optParts4:"4 Parts (Complex App)",
+    optParts5:"5 Parts (Very Complex App)",
+    lblTheme:"UI Style Theme",
+    optThemeDark:"Dark Mode (Default)",
+    optThemeLight:"Light Mode (Office/Document)",
+    optThemeIndustrial:"High Contrast (Industrial)",
+    lblDbMode:"Data Storage Mode",
+    optDbSingle:"Single (Overwrite)",
+    optDbList:"Time-series Accumulate (Chart/Filter)",
+    optDbScenario:"Selective Save (Scenario/Modal)",
+    secIO:"Data I/O",
+    chkDbSync:"DB Sync",
+    chkJson:"JSON Save / Load",
+    chkCsv:"CSV Save / Load",
+    chkXlsx:"Excel (XLSX) Export",
+    chkImage:"Image (PNG) Capture",
+    chkClipboard:"Clipboard Copy Button",
+    secLayout:"UI / UX Options",
+    chkThemeToggle:"Runtime Theme Toggle Button",
+    chkResponsive:"Responsive (Mobile)",
+    chkDesktop:"Desktop Landscape Optimized",
+    chkPrint:"Print Optimization",
+    chkFontSize:"Font Size Adjuster",
+    chkOfflineFallback:"Offline Fallback (System Font / Inline SVG)",
+    lblBrowserCompat:"Browser Compatibility",
+    optCompatModern:"Modern (Latest Chrome/Edge)",
+    optCompatEs2018:"ES2018+ (Legacy Chromium)",
+    optCompatIe11:"IE11 Compatible (var/XHR/Polyfill)",
+    lblStack:"Tech Stack (Auto)",
+    previewNote:"Paste into AI and run. Output is split by parts to avoid token limits.",
+    btnCopy:"Copy to Clipboard",
+    copyDone:"Copied to clipboard",
+    copyFail:"Clipboard copy failed. Please select text manually (Ctrl+A) and copy (Ctrl+C).",
+    btnHelp:"❓ Help",
+    btnReset:"🔄 Reset",
+    resetConfirm:"Are you sure you want to reset all inputs?",
+    phSearchHistory:"Search history...",
+    historyEmpty:"No history saved.",
+    searchEmpty:"No search results found.",
+    helpTitle:"💡 AirGap PromptForge User Guide",
+    helpSec1Title:"1. Background & Purpose",
+    helpSec1Body:"• Air-Gapped Environment: Designed to generate single-file web apps without external CDNs inside secure restricted networks.\n• Token Limit Bypass: Controls code generation by breaking it into multiple parts to prevent AI truncation and cutoff errors.",
+    helpSec2Title:"2. Input Guide",
+    helpSec2Body:"• App Name: Enter an intuitive title (e.g., Naval Ship Equipment CBM+ Sensor Dashboard).\n• Purpose: Specify who uses it and what problem it aims to solve.\n• Core Features: Listing functional logic using detailed numbers significantly boosts the output quality.",
+    helpSec3Title:"3. Automation (AUTO) Logic",
+    helpSec3Body:"• Part Splitting: Real-time calculation based on text lengths and selected features (Excel, API) dynamically recommends safe part counts (1-5).\n• Storage Mode: Automatically shifts to time-series accumulate or version management when keywords like 'history' or 'log' are detected.",
+    helpSec4Title:"4. How to Use",
+    helpSec4Body:"• Step 1: Click [Copy to Clipboard] and paste (Ctrl+V) into the AI conversation window.\n• Step 2: Once the AI finishes rendering the P1 block and pauses, type 'Next' or 'Continue' to fetch remaining sections.\n• Step 3: Combine all output code segments (\u0060\u0060\u0060html) sequentially into a text file, save it as 'index.html', and run it offline.",
+    lblHistory:"History",
+    btnClearHistory:"Clear All"
+  },
+  ja: {
+    hdrTitle:"AirGap PromptForge",
+    hdrSub:"Offline Web App Prompt Generator · エアギャップ環境専用 (Vanilla JS only)",
+    secProject:"プロジェクト基本情報",
+    lblAppName:"アプリ名",
+    phAppName:"例）タービン効率動的シミュレーター",
+    lblPurpose:"アプリの目的",
+    lblAiService: "AIモデル",
+    phPurpose:"例）工場計測データに基づくリアルタイム効率計算・可視化",
+    secFeatures:"主要機能要件",
+    lblCoreFeatures:"実装すべき機能（詳細）",
+    phFeatures:"- 機能1: 複合式計算とリアルタイム反映\n- 機能2: 計算履歴リスト表示\n- 機能3: 結果チャート自動更新",
+    secOutput:"出力・スタイル設定",
+    lblParts:"出力パート分割",
+    optParts1:"1パート（非常にシンプル）",
+    optParts2:"2パート（シンプル）",
+    optParts3:"3パート（標準アプリ）",
+    optParts4:"4パート（複雑なアプリ）",
+    optParts5:"5パート（非常に複雑なアプリ）",
+    lblTheme:"UIスタイルテーマ",
+    optThemeDark:"ダークモード（デフォルト）",
+    optThemeLight:"ライトモード（オフィス/文書用）",
+    optThemeIndustrial:"高コントラスト（産業現場用）",
+    lblDbMode:"データ保存方式",
+    optDbSingle:"単件保存（上書き）",
+    optDbList:"時系列累積（チャート/フィルター）",
+    optDbScenario:"選択保存（シナリオ/モーダル）",
+    secIO:"データ入出力",
+    chkDbSync:"DB連携",
+    chkJson:"JSON保存 / 読み込み",
+    chkCsv:"CSV保存 / 読み込み",
+    chkXlsx:"Excel (XLSX) 保存",
+    chkImage:"画像（PNG）キャプチャ",
+    chkClipboard:"クリップボードコピーボタン",
+    secLayout:"UI / UX オプション",
+    chkThemeToggle:"実行時テーマ切替ボタン",
+    chkResponsive:"レスポンシブ（モバイル対応）",
+    chkDesktop:"デスクトップ横表示最適化",
+    chkPrint:"印刷最適化",
+    chkFontSize:"文字サイズ調整ボタン",
+    chkOfflineFallback:"オフラインフォールバック（システムフォント/SVG inline）",
+    lblBrowserCompat:"ブラウザ互換性",
+    optCompatModern:"モダン（最新Chrome/Edge）",
+    optCompatEs2018:"ES2018+（旧Chromium）",
+    optCompatIe11:"IE11対応（var/XHR/ポリフィル）",
+    lblStack:"技術スタック（自動）",
+    previewNote:"コピーしてAIに貼り付けて実行。トークン制限回避のためパートごとに分割して出力されます。",
+    btnCopy:"クリップボードにコピー",
+    copyDone:"クリップボードにコピーしました",
+    copyFail:"コピーに失敗しました。テキストを手動で選択（Ctrl+A）してコピー（Ctrl+C）してください。",
+    btnHelp:"❓ ヘルプ",
+    btnReset:"🔄 リセット",
+    resetConfirm:"入力内容をすべてリセットしますか？",
+    phSearchHistory:"履歴を検索...",
+    historyEmpty:"保存された履歴はありません。",
+    searchEmpty:"検索結果がありません。",
+    helpTitle:"💡 AirGap PromptForge 使用ガイド",
+    helpSec1Title:"1. 開発背景と目的",
+    helpSec1Body:"• エアギャップ環境特化: 社内セキュリティネット（Air-Gapped）環境内で、外部ライブラリ（CDN）を一切使用せず単一HTMLで動作するWebアプリの構築を支援します。\n• トークン制限の克服: AIの1回あたりの最大出力制限によるコードの途切れ現象を防ぐため、安全に分割生成されるようプロンプト側から制御します。",
+    helpSec2Title:"2. 入力ステップガイド",
+    helpSec2Body:"• アプリ名: 直感的な名前を入力（例：艦艇装備CBM+センサー監視ダッシュボード）。\n• アプリの目的: 誰が、どのような状況で、何を解決したいのかを具体的に記載します。\n• 主要機能: 実装すべきロジックに番号をつけて詳細に箇条書きにすることで、AIコードの品質が飛躍的に向上します。",
+    helpSec3Title:"3. 自動化（AUTO）の仕組み",
+    helpSec3Body:"• 出力パート分割: テキストの長さと選択された重い機能（Excel、API連携など）をリアルタイムでスコア化し、最適な分割数（1〜5）を自動提案します。\n• データ保存方式: 「履歴」「累積」「シナリオ」等のキーワードを検知すると、上書きモードから時系列蓄積・バージョン管理モードへ自動で切り替わります。",
+    helpSec4Title:"4. プロンプト生成後の操作手順",
+    helpSec4Body:"• Step 1: [クリップボードにコピー]ボタンを押し、AIの入力欄に貼り付けて送信します。\n• Step 2: AIがP1ブロックのコードを出力し終えて停止したら、「続けて」または「Next」と入力して次のパートを順番に出力させます。\n• Step 3: すべてのパートのコード（\u0060\u0060\u0060html）を1つのテキストエディタに順番に結合し、拡張子を「.html」にして保存し、ブラウザで実行します。",
+    lblHistory:"履歴",
+    btnClearHistory:"すべて削除"
+  },
+  zh: {
+    hdrTitle:"AirGap PromptForge",
+    hdrSub:"Offline Web App Prompt Generator · 专为空气隔离环境设计 (Vanilla JS only)",
+    secProject:"项目基本信息",
+    lblAppName:"应用名称",
+    phAppName:"例：涡轮效率动态模拟器",
+    lblPurpose:"应用目的",
+    lblAiService: "AI 模型",
+    phPurpose:"例：基于工厂测量数据的实时效率计算与可视化",
+    secFeatures:"核心功能需求",
+    lblCoreFeatures:"需要实现的功能（详细说明）",
+    phFeatures:"- 功能1: 复合公式计算及实时更新\n- 功能2: 计算历史记录列表\n- 功能3: 结果图表自动更新",
+    secOutput:"输出与样式设置",
+    lblParts:"输出分段",
+    optParts1:"1段（非常简单）",
+    optParts2:"2段（简单）",
+    optParts3:"3段（标准应用）",
+    optParts4:"4段（复杂应用）",
+    optParts5:"5段（非常复杂的应用）",
+    lblTheme:"UI样式主题",
+    optThemeDark:"深色模式（默认）",
+    optThemeLight:"浅色模式（办公/文档）",
+    optThemeIndustrial:"高对比度（工业现场）",
+    lblDbMode:"数据存储方式",
+    optDbSingle:"单条存储（覆盖）",
+    optDbList:"时序累积（图表/筛选）",
+    optDbScenario:"选择存储（场景/弹窗）",
+    secIO:"数据输入输出",
+    chkDbSync:"数据库同步",
+    chkJson:"JSON保存 / 读取",
+    chkCsv:"CSV保存 / 读取",
+    chkXlsx:"Excel (XLSX) 导出",
+    chkImage:"图像（PNG）截图",
+    chkClipboard:"剪贴板复制按钮",
+    secLayout:"UI / UX 选项",
+    chkThemeToggle:"运行时主题切换按钮",
+    chkResponsive:"响应式（移动端兼容）",
+    chkDesktop:"桌面横向优化",
+    chkPrint:"打印优化",
+    chkFontSize:"字体大小调节",
+    chkOfflineFallback:"离线回退（系统字体/内联SVG）",
+    lblBrowserCompat:"浏览器兼容性",
+    optCompatModern:"现代（最新Chrome/Edge）",
+    optCompatEs2018:"ES2018+（旧版Chromium）",
+    optCompatIe11:"IE11兼容（var/XHR/Polyfill）",
+    lblStack:"技术栈（自动）",
+    previewNote:"复制后粘贴到AI并运行。为规避Token限制，输出将按段分割。",
+    btnCopy:"复制到剪贴板",
+    copyDone:"已复制到剪贴板",
+    copyFail:"复制失败。请手动选择文本（Ctrl+A）后复制（Ctrl+C）。",
+    btnHelp:"❓ 帮助",
+    btnReset:"🔄 重置",
+    resetConfirm:"确定要重置所有输入内容吗？",
+    phSearchHistory:"搜索历史记录...",
+    historyEmpty:"没有保存的历史记录。",
+    searchEmpty:"没有找到搜索结果。",
+    helpTitle:"💡 AirGap PromptForge 使用指南",
+    helpSec1Title:"1. 开发背景与目的",
+    helpSec1Body:"• 专为隔离环境设计: 支持在企业内网安全环境（Air-Gapped）内生成无需外部任何第三方库（CDN）的单文件HTML Web应用。\n• 突破Token限制: 通过将代码强行控制为分段输出，彻底解决AI在编写长代码时由于输出长度受限而出现截断和未完成的情况。",
+    helpSec2Title:"2. 分步输入指南",
+    helpSec2Body:"• 应用名称: 输入直观的名称（例如：舰艇设备CBM+传感器监测大屏）。\n• 应用目的: 明确使用群体和要解决的核心痛点。\n• 核心功能: 强烈建议将要实现的功能按照具体编号分条详细列出，AI生成的代码质量会随之成倍提升。",
+    helpSec3Title:"3. 自动推荐（AUTO）原理",
+    helpSec3Body:"• 输出分段: 实时评估用户输入的文本长度以及勾选的高负载功能（Excel导出、API同步等），自动推荐最安全的输出分段数（1-5）。\n• 数据存储: 当检测到“历史”、“累计”、“日志”、“方案”等关键词时，自动从单条覆盖模式切换为时序累积或版本管理模式。",
+    helpSec4Title:"4. 提示词生成后的使用方法",
+    helpSec4Body:"• Step 1: 点击 [复制到剪贴板] 按钮，将生成的完整框架提示词复制并发送给大模型（如Claude/ChatGPT）。\n• Step 2: 模型输出完第P1部分的 \u0060\u0060\u0060html 代码块并停顿时，在对话框内发送“继续”或“Next”，以此类推直到接收完全部段落。\n• Step 3: 按顺序将收到的所有段落代码全部拼接组装到一个空的文本文件中，命名为 'index.html' 并保存，直接在浏览器中双击即可离线运行。",
+    lblHistory:"历史记录",
+    btnClearHistory:"全部删除"
+  },
+  de: {
+    hdrTitle:"AirGap PromptForge",
+    hdrSub:"Offline Web App Prompt Generator · Für Air-Gapped Umgebungen (Vanilla JS only)",
+    secProject:"Projektgrundlagen",
+    lblAppName:"App-Name",
+    phAppName:"z.B. Turbinen-Effizienz-Simulator",
+    lblPurpose:"App-Zweck",
+    lblAiService: "KI-Modell",
+    phPurpose:"z.B. Echtzeit-Effizienzberechnung basierend auf Fabrikmessdaten",
+    secFeatures:"Kernfunktionsanforderungen",
+    lblCoreFeatures:"Zu implementierende Funktionen (detailliert)",
+    phFeatures:"- Funktion 1: Komplexe Formelberechnung mit Echtzeit-Update\n- Funktion 2: Berechnungsverlaufsliste\n- Funktion 3: Automatische Diagrammaktualisierung",
+    secOutput:"Ausgabe- & Stileinstellungen",
+    lblParts:"Ausgabe-Aufteilung",
+    optParts1:"1 Teil (Sehr einfach)",
+    optParts2:"2 Teile (Einfach)",
+    optParts3:"3 Teile (Standard-App)",
+    optParts4:"4 Teile (Komplexe App)",
+    optParts5:"5 Teile (Sehr komplexe App)",
+    lblTheme:"UI-Stil-Theme",
+    optThemeDark:"Dunkelmodus (Standard)",
+    optThemeLight:"Hellmodus (Büro/Dokument)",
+    optThemeIndustrial:"Hoher Kontrast (Industriell)",
+    lblDbMode:"Datenspeichermodus",
+    optDbSingle:"Einzeln (Überschreiben)",
+    optDbList:"Zeitreihe (Diagramm/Filter)",
+    optDbScenario:"Selektiv (Szenario/Modal)",
+    secIO:"Daten Ein-/Ausgabe",
+    chkDbSync:"DB-Synchronisation",
+    chkJson:"JSON Speichern / Laden",
+    chkCsv:"CSV Speichern / Laden",
+    chkXlsx:"Excel (XLSX) Exportieren",
+    chkImage:"Bild (PNG) Aufnahme",
+    chkClipboard:"Zwischenablage-Kopierschaltfläche",
+    secLayout:"UI / UX Optionen",
+    chkThemeToggle:"Laufzeit-Theme-Umschalter",
+    chkResponsive:"Responsiv (Mobil)",
+    chkDesktop:"Desktop-Querformat optimiert",
+    chkPrint:"Druckoptimierung",
+    chkFontSize:"Schriftgrößen-Regler",
+    chkOfflineFallback:"Offline-Fallback (Systemschrift / SVG inline)",
+    lblBrowserCompat:"Browser-Kompatibilität",
+    optCompatModern:"Modern (aktuell Chrome/Edge)",
+    optCompatEs2018:"ES2018+ (älteres Chromium)",
+    optCompatIe11:"IE11-kompatibel (var/XHR/Polyfill)",
+    lblStack:"Tech-Stack (Auto)",
+    previewNote:"Nach dem Kopieren in KI einfügen und ausführen. Ausgabe wird zur Token-Vermeidung aufgeteilt.",
+    btnCopy:"In Zwischenablage kopieren",
+    copyDone:"In Zwischenablage kopiert",
+    copyFail:"Kopieren fehlgeschlagen. Bitte Text manuell auswählen (Strg+A) und kopieren (Strg+C).",
+    btnHelp:"❓ Hilfe",
+    btnReset:"🔄 Zurücksetzen",
+    resetConfirm:"Möchten Sie alle Eingaben wirklich zurücksetzen?",
+    phSearchHistory:"Verlauf durchsuchen...",
+    historyEmpty:"Kein Verlauf gespeichert.",
+    searchEmpty:"Keine Suchergebnisse gefunden.",
+    helpTitle:"💡 AirGap PromptForge Anleitung",
+    helpSec1Title:"1. Hintergrund und Zweck",
+    helpSec1Body:"• Air-Gapped-Spezialisierung: Unterstützt die Erstellung von Webanwendungen in isolierten Unternehmensnetzwerken, die als einzelne HTML-Datei komplett ohne externe Bibliotheken (CDNs) laufen.\n• Token-Limit-Überwindung: Teilt den Ausgabecode strategisch in mehrere Teile auf, um zu verhindern, dass die KI bei komplexen, langen Skripten die Generierung mitten im Code abbricht.",
+    helpSec2Title:"2. Schritt-für-Schritt-Anleitung",
+    helpSec2Body:"• App-Name: Aussagekräftigen Namen wählen (z. B. Dashboard zur CBM+-Sensorüberwachung für Marineschiffe).\n• App-Zweck: Definieren Sie genau, wer die App verwendet und welches Problem gelöst werden soll.\n• Kernfunktionen: Listen Sie die gewünschte Logik mit eindeutigen Nummern detailliert auf – dies erhöht die Codequalität der KI drastisch.",
+    helpSec3Title:"3. Funktionsweise der Automatisierung (AUTO)",
+    helpSec3Body:"• Ausgabe-Aufteilung: Analysiert Textlänge und rechenintensive Zusatzfunktionen (wie Excel-Export, API-Synchronisation) in Echtzeit, um automatisch die sicherste Teileanzahl (1-5) vorzuschlagen.\n• Datenspeicherung: Erkennt Schlüsselwörter wie 'Verlauf', 'Protokoll' oder 'Szenario' und wechselt automatisch vom Überschreibmodus in den Zeitreihen- oder Versionsverwaltungsmodus.",
+    helpSec4Title:"4. Nutzung nach der Prompt-Generierung",
+    helpSec4Body:"• Schritt 1: Klicken Sie auf [In Zwischenablage kopieren] und fügen Sie den Text mit (Strg+V) in das KI-Chatfenster ein.\n• Schritt 2: Sobald die KI den Code für Teil P1 ausgegeben hat und stoppt, geben Sie einfach 'Weiter' oder 'Next' ein, um die nachfolgenden Abschnitte nacheinander abzurufen.\n• Schritt 3: Fügen Sie alle erhaltenen Codeblöcke (\u0060\u0060\u0060html) der Reihe nach in einer leeren Textdatei zusammen, speichern Sie diese als 'index.html' und öffnen Sie sie per Doppelklick im Browser.",
+    lblHistory:"Verlauf",
+    btnClearHistory:"Alles löschen"
+  },
+  fr: {
+    hdrTitle:"AirGap PromptForge",
+    hdrSub:"Offline Web App Prompt Generator · Conçu pour les environnements Air-Gapped (Vanilla JS only)",
+    secProject:"Informations du projet",
+    lblAppName:"Nom de l'application",
+    phAppName:"Ex : Simulateur dynamique d'efficacité de turbine",
+    lblPurpose:"Objectif de l'application",
+    phPurpose:"Ex : Calcul d'efficacité en temps réel basé sur les données de mesure d'usine",
+    secFeatures:"Exigences fonctionnelles",
+    lblCoreFeatures:"Fonctionnalités à implémenter (en détail)",
+    phFeatures:"- Fonctionnalité 1: Calcul de formule complexe en temps réel\n- Fonctionnalité 2: Liste de l'historique des calculs\n- Fonctionnalité 3: Mise à jour automatique du graphique",
+    secOutput:"Paramètres de sortie et de style",
+    lblAiService:"Modèle d'IA",
+    lblParts:"Découpage",
+    optParts1:"1 partie (Très simple)",
+    optParts2:"2 parties (Simple)",
+    optParts3:"3 parties (Standard)",
+    optParts4:"4 parties (Complexe)",
+    optParts5:"5 parties (Très complexe)",
+    lblTheme:"Thème UI",
+    optThemeDark:"Sombre (Défaut)",
+    optThemeLight:"Clair (Bureau)",
+    optThemeIndustrial:"Contraste (Indus.)",
+    lblDbMode:"Stockage",
+    optDbSingle:"Unique (Écraser)",
+    optDbList:"Séries (Graphe/Filtre)",
+    optDbScenario:"Sélectif (Modal)",
+    secIO:"Entrée / Sortie de données",
+    chkDbSync:"Synchronisation DB",
+    chkJson:"Sauvegarder / Charger JSON",
+    chkCsv:"Sauvegarder / Charger CSV",
+    chkXlsx:"Exporter Excel (XLSX)",
+    chkImage:"Capture d'image (PNG)",
+    chkClipboard:"Bouton copier dans le presse-papiers",
+    secLayout:"Options UI / UX",
+    chkThemeToggle:"Bouton de bascule de thème",
+    chkResponsive:"Responsive (Mobile)",
+    chkDesktop:"Optimisé paysage bureau",
+    chkPrint:"Optimisation impression",
+    chkFontSize:"Réglage de la taille de police",
+    chkOfflineFallback:"Fallback hors ligne (police système / SVG inline)",
+    lblBrowserCompat:"Compatibilité navigateur",
+    optCompatModern:"Moderne (Chrome/Edge récent)",
+    optCompatEs2018:"ES2018+ (Chromium ancien)",
+    optCompatIe11:"Compatible IE11 (var/XHR/Polyfill)",
+    lblStack:"Stack technique (Auto)",
+    previewNote:"Copiez et collez dans l'IA pour exécuter. La sortie est divisée en parties pour éviter les limites de tokens.",
+    btnCopy:"Copier dans le presse-papiers",
+    copyDone:"Copié dans le presse-papiers",
+    copyFail:"Échec de la copie. Veuillez sélectionner le texte manuellement (Ctrl+A) puis copier (Ctrl+C).",
+    btnHelp:"❓ Aide",
+    btnReset:"🔄 Réinitialiser",
+    resetConfirm:"Voulez-vous vraiment réinitialiser toutes les entrées ?",
+    phSearchHistory:"Rechercher dans l'historique...",
+    historyEmpty:"Aucun historique enregistré.",
+    searchEmpty:"Aucun résultat de recherche.",
+    helpTitle:"💡 Guide d'utilisation AirGap PromptForge",
+    helpSec1Title:"1. Contexte et objectif",
+    helpSec1Body:"• Spécificité Air-Gapped : Permet de générer des applications web sous forme de fichier HTML unique fonctionnant sans aucune bibliothèque externe (CDN) au sein de réseaux d'entreprise sécurisés.\n• Contournement des limites de jetons : Force l'IA à segmenter ses réponses en plusieurs parties (P1, P2...) afin d'éviter les coupures de génération au milieu des scripts longs.",
+    helpSec2Title:"2. Guide de saisie étape par étape",
+    helpSec2Body:"• Nom de l'app : Saisissez un nom explicite (ex: Tableau de bord de surveillance CBM+ pour équipements navals).\n• Objectif : Définissez clairement qui l'utilise et quel problème métier doit être résolu.\n• Fonctions clés : Il est vivement conseillé de lister les fonctionnalités attendues avec des numéros précis pour maximiser la pertinence du code produit.",
+    helpSec3Title:"3. Principe de l'automatisation (AUTO)",
+    helpSec3Body:"• Division des parties : Calcule en temps réel la complexité textuelle et l'impact des options lourdes (export Excel, synchronisation API) pour suggérer automatiquement le nombre idéal de sections (1-5).\n• Stockage des données : Bascule automatiquement du mode écrasement vers le stockage chronologique ou la gestion de versions si des mots-clés comme 'historique', 'cumul' ou 'log' sont détectés.",
+    helpSec4Title:"4. Procédure après génération du prompt",
+    helpSec4Body:"• Étape 1 : Cliquez sur [Copier dans le presse-papiers] et collez (Ctrl+V) le prompt directement dans l'interface de l'IA.\n• Étape 2 : Lorsque l'IA termine le premier bloc de code (P1) et s'arrête, tapez simplement 'Continuer' ou 'Next' pour récupérer séquentiellement les parties suivantes.\n• Étape 3 : Assemblez tous les blocs de code (\u0060\u0060\u0060html) reçus dans l'ordre au sein d'un fichier texte vide, enregistrez-le sous le nom 'index.html' et double-cliquez pour l'exécuter hors ligne.",
+    lblHistory:"Historique",
+    btnClearHistory:"Tout effacer"
+  }
+};
+
+let currentLang = 'en';
+
+function applyLang(lang) {
+  currentLang = lang;
+  const t = i18n[lang];
+  if (!t) return;
+
+  // textContent 교체 (hdrTitle은 innerHTML 보존 — brand-air span 유지)
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (t[key] === undefined) return;
+    if (key === 'hdrTitle') return; // 브랜드명 HTML 구조 유지
+    el.textContent = t[key];
+  });
+
+  // placeholder 교체
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.dataset.i18nPlaceholder;
+    if (t[key] !== undefined) el.placeholder = t[key];
+  });
+
+  // select option 교체
+  document.querySelectorAll('option[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+
+  // html lang 속성
+  document.documentElement.lang = lang;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTIL: XSS Escaper
+// ═══════════════════════════════════════════════════════════════
+function escapeHTML(str) {
+  return String(str || "").replace(/[&<>"']/g, function(m) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+const state = {
+  appName:         "",
+  purpose:         "",
+  coreFeatures:    "",
+  aiService:       "claude",
+  parts:           "3",
+  theme:           "dark",
+  dbMode:          "single",
+  techStack:       "vanilla",
+  io:     { apiSync:true, json:false, csv:false, xlsx:true, image:true, clipboard:false },
+  layout: { themeToggle:true, responsive:true, desktopOptimized:true, print:true, fontSize:false, offlineFallback:true, browserCompat:"modern" },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// generatePrompt
+// ═══════════════════════════════════════════════════════════════
+function generatePrompt(form) {
+  // 현재 선택된 언어를 영문 명칭으로 변환하여 AI에게 전달
+  const langMap = { ko: 'Korean', en: 'English', ja: 'Japanese', zh: 'Chinese', de: 'German', fr: 'French' };
+  const currentPromptLang = langMap[currentLang] || 'English';
+
+  const rq1 = form.appName || "target application";
+  const rq2 = form.purpose || "core purpose";
+  const rq3 = (form.coreFeatures || "").split("\n").map(l=>l.replace(/^[-*\d.)#\s]+/,"").trim()).find(l=>l.length>4) || "core feature";
+
+  const IO_LABEL = {json:"JSON save/load", csv:"CSV save/load", xlsx:"Excel(XLSX) save/load via SheetJS(inline)", image:"PNG canvas export", apiSync:"AX Portal API Sync", clipboard:"clipboard copy button"};
+  const ioLine = Object.entries(form.io).filter(([,v])=>v).map(([k])=>IO_LABEL[k]).filter(Boolean).join(", ");
+
+  const layoutParts = [];
+  if(form.layout.themeToggle && form.theme !== "industrial") layoutParts.push("runtime theme toggle (dark↔light)");
+  if(form.layout.responsive)        layoutParts.push("responsive/mobile");
+  if(form.layout.desktopOptimized)  layoutParts.push("desktop-optimized landscape");
+  if(form.layout.print)             layoutParts.push("report & print optimization (@media print: hide UI, expand content, page-break), MUST include detailed analysis results and summaries in the report view");
+  if(form.layout.fontSize)          layoutParts.push("font-size adjuster button (S/M/L, persisted to localStorage)");
+  layoutParts.push("offline fallback: system fonts only, all icons as inline SVG, zero CDN");
+
+  const browserCompatNote =
+    form.layout.browserCompat === "ie11"   ? "- Browser compat: IE11. Use var/function declarations, XMLHttpRequest instead of fetch, no arrow functions in prototypes, include necessary polyfills inline." :
+    form.layout.browserCompat === "es2018" ? "- Browser compat: ES2018+ legacy Chromium. Avoid optional chaining/nullish coalescing. Use Promise/.then instead of top-level await." :
+    "- Browser compat: Modern Chrome/Edge. ES2022+ features allowed.";
+
+  const hasSample = form.io.csv || form.io.json || form.io.xlsx;
+  
+  const pCount = parseInt(form.parts, 10) || 3;
+
+  const sysMsgs = {
+    ko: { pfx: `전체 코드를 ${pCount}개의 파트로 나누어 출력합니다. 모든 파트(P1~P${pCount})의 출력이 완료된 후 하나의 HTML 파일로 합쳐서 실행해 주세요.`, sfx: "해당 파트 출력이 완료되었습니다. 다음 파트를 계속 출력할까요?" },
+    en: { pfx: `Output the entire code divided into ${pCount} parts. After all parts (P1~P${pCount}) are output, please combine them into a single HTML file to run.`, sfx: "Output for this part is complete. Shall I continue printing the next part?" },
+    ja: { pfx: `全体のコードを${pCount}つのパートに分けて出力します。すべてのパート(P1〜P${pCount})の出力が完了した後、1つのHTMLファイルに結合して実行してください。`, sfx: "該当パートの出力が完了しました。次のパートを続けて出力しますか？" },
+    zh: { pfx: `将全部代码分为${pCount}个部分输出。所有部分(P1~P${pCount})输出完成后，请合并为一个HTML文件运行。`, sfx: "该部分输出已完成。要继续输出下一部分吗？" },
+    de: { pfx: `Geben Sie den gesamten Code in ${pCount} Teilen aus. Wenn alle Teile (P1~P${pCount}) ausgegeben sind, fügen Sie diese zu einer HTML-Datei zusammen.`, sfx: "Die Ausgabe dieses Teils ist abgeschlossen. Soll der nächste Teil ausgegeben werden?" },
+    fr: { pfx: `Produisez le code complet divisé en ${pCount} parties. Une fois toutes les parties (P1~P${pCount}) générées, combinez-les en un seul fichier HTML.`, sfx: "La sortie de cette partie est terminée. Dois-je continuer avec la partie suivante ?" }
+  };
+  const msg = sysMsgs[currentLang] || sysMsgs.en;
+
+  let pOutput = "";
+  if (pCount === 1) {
+    pOutput = `P1: Entire code from <!DOCTYPE html> to <\\/script></body></html> in one block.\n`;
+  } else if (pCount === 2) {
+    pOutput = `P1: <!DOCTYPE html>→<style>→<body>→<script> globals. STOP.\n`;
+    pOutput += `P2: Business logic, APIs, Render, close <\\/script></body></html>.\n`;
+  } else if (pCount === 3) {
+    pOutput = `P1: <!DOCTYPE html>→<style>→<body>→<script> globals/state/selectors. STOP.\n`;
+    pOutput += `P2: Business logic, ${form.io.apiSync ? 'API fetch/post' : 'localStorage'}, event listeners, data parsing.\n`;
+    pOutput += `P3: Render, calculations, exports, init, close <\\/script></body></html>.\n`;
+  } else if (pCount === 4) {
+    pOutput = `P1: <!DOCTYPE html>→<style>→<body>→<script> globals/state/selectors. STOP.\n`;
+    pOutput += `P2: Business logic, ${form.io.apiSync ? 'API fetch/post' : 'localStorage'}, event listeners.\n`;
+    pOutput += `P3: Data parsing, state management, complex calculations.\n`;
+    pOutput += `P4: Render, exports, init, close <\\/script></body></html>.\n`;
+  } else {
+    pOutput = `P1: <!DOCTYPE html>→<style>→<body>→<script> globals/state/selectors. STOP.\n`;
+    pOutput += `P2: ${form.io.apiSync ? 'API fetch/post' : 'localStorage'}, state management.\n`;
+    pOutput += `P3: Event listeners, core business logic.\n`;
+    pOutput += `P4: Data parsing, complex calculations.\n`;
+    pOutput += `P5: Render, exports, init, close <\\/script></body></html>.\n`;
+  }
+
+  const dbModeFeatures = form.dbMode === "list" 
+    ? "- DB Mode: Time-series Array. Default view: render latest data + trend chart. Add date range filter to fetch/analyze past data." 
+    : form.dbMode === "scenario" 
+    ? "- DB Mode: Dictionary. Save metadata: user(sessionStorage), version name, timestamp. Build 'Load' modal with search bar to select past versions." 
+    : "- DB Mode: Single Object (Overwrite current state).";
+
+  let themeCSS = "";
+  let themeDesc = "";
+  if (form.theme === "dark") {
+    themeCSS = `:root{--bg:#0b0f19;--sur-1:#131929;--sur-2:#1c2333;--sur-3:#243047;--bdr:#2a3550;--bdr-sub:#1e2c44;--acc:#4f8ef7;--acc-h:#6aa3ff;--acc-bg:rgba(79,142,247,.10);--suc:#34d399;--war:#fbbf24;--err:#f87171;--tx-1:#e8edf7;--tx-2:#8fa3c8;--tx-3:#506080;--r-sm:8px;--r-md:12px;--r-lg:16px;--sh-card:0 4px 24px rgba(0,0,0,.4),0 1px 4px rgba(0,0,0,.3);--sh-pop:0 8px 40px rgba(0,0,0,.55);}`;
+    themeDesc = "Dark theme.";
+  } else if (form.theme === "light") {
+    themeCSS = `:root{--bg:#f8fafc;--sur-1:#ffffff;--sur-2:#f1f5f9;--sur-3:#e2e8f0;--bdr:#e2e8f0;--bdr-sub:#cbd5e1;--acc:#F37321;--acc-h:#D95C14;--acc-bg:rgba(243,115,33,.10);--suc:#059669;--war:#d97706;--err:#dc2626;--tx-1:#0f172a;--tx-2:#334155;--tx-3:#64748b;--r-sm:8px;--r-md:12px;--r-lg:16px;--sh-card:0 4px 24px rgba(0,0,0,.06),0 1px 4px rgba(0,0,0,.03);--sh-pop:0 8px 40px rgba(0,0,0,.15);}`;
+    themeDesc = "Light theme. Use Hanwha Orange(#F37321) as accent.";
+  } else {
+    themeCSS = `:root{--bg:#000000;--sur-1:#111111;--sur-2:#222222;--sur-3:#333333;--bdr:#444444;--bdr-sub:#555555;--acc:#eab308;--acc-h:#ca8a04;--acc-bg:rgba(234,179,8,.10);--suc:#22c55e;--war:#f59e0b;--err:#ef4444;--tx-1:#ffffff;--tx-2:#cccccc;--tx-3:#999999;--r-sm:4px;--r-md:6px;--r-lg:8px;--sh-card:none;--sh-pop:0 0 20px rgba(234,179,8,.2);}`;
+    themeDesc = "High-Contrast theme (Industrial). Must use LARGER base fonts for outdoor visibility.";
+  }
+
+  let apiRules = "";
+  if (form.io.apiSync) {
+    apiRules = `\n[Data Sync: AX API]
+- Generate APP_ID: \`const pathParts = window.location.pathname.split('/'); const APP_ID = decodeURIComponent(pathParts[pathParts.length - 2] + '/' + pathParts[pathParts.length - 1].replace('.html', ''));\`
+- INIT: fetch \`/api/data?app=\${APP_ID}\` to load.
+- SAVE: fetch \`/api/data\` POST with JSON \`{ app: APP_ID, data: { ... } }\`.
+- DO NOT use localStorage.`;
+  }
+
+  const aiProfiles = {
+    claude: {
+      label: "Claude (Anthropic)",
+      prefix: `<role>You are an expert frontend developer specializing in single-file offline web applications.</role>\n<instructions>`,
+      suffix: `</instructions>`,
+      styleHints: "Use <thinking> to plan architecture before coding. Break complex logic into clearly named functions. Prefer explicit variable names over short ones.",
+      outputHint: "Wrap each part in <part_N> tags. Before P1, output <plan> with component breakdown and data flow.</plan>",
+      researchHint: `<research>\nSearch before coding:\n① "${rq1} algorithm formula" — arXiv/IEEE formulas, standards\n② "${rq2} implementation best practice" — patterns, data structures\n③ "${rq3} calculation method" — formulas, schemas\nCite ≥1 source in top-of-file comment.\n</research>`,
+    },
+    chatgpt: {
+      label: "ChatGPT (OpenAI)",
+      prefix: `## System\nYou are an expert frontend developer. Follow the instructions below precisely.\n\n## User Request`,
+      suffix: ``,
+      styleHints: "Use markdown headers (##) to separate logical sections in your response. Be explicit about assumptions. If a requirement is ambiguous, state your interpretation before coding.",
+      outputHint: "Before each part, output a brief ## Plan comment. End each part with '---END PART N---' marker.",
+      researchHint: `## Research (search before coding)\n- "${rq1} algorithm formula" — arXiv/IEEE formulas, standards\n- "${rq2} implementation best practice" — patterns, data structures\n- "${rq3} calculation method" — formulas, schemas\nCite ≥1 source in top-of-file comment.`,
+    },
+    gemini: {
+      label: "Gemini (Google)",
+      prefix: `You are an expert frontend developer with deep knowledge of web standards and modern JavaScript.\nTask:`,
+      suffix: ``,
+      styleHints: "Leverage your knowledge of Google web APIs where applicable. Prefer standards-compliant approaches. Use const/let consistently, prefer array methods over loops.",
+      outputHint: "Output each part as a clearly labeled code block. Before coding, briefly confirm your understanding of the requirements in 2-3 sentences.",
+      researchHint: `[Research — verify before coding]\n① "${rq1} algorithm formula" → look up arXiv/IEEE/Google Scholar for formulas, standards\n② "${rq2} implementation best practice" → confirm current patterns, data structures\n③ "${rq3} calculation method" → verify formulas, schemas\nAdd ≥1 verified citation as a comment at the top of the file.`,
+    },
+    grok: {
+      label: "Grok (xAI)",
+      prefix: `Build this. No fluff.`,
+      suffix: ``,
+      styleHints: "Keep responses direct. Skip boilerplate explanations. Output code first, minimal comments only where logic is non-obvious. Prefer terse but readable code.",
+      outputHint: "Output each part as a raw \u0060\u0060\u0060html block. No preamble. Just code.",
+      researchHint: `Research first (quick):\n- "${rq1}" formula/standard\n- "${rq2}" best practice\n- "${rq3}" calculation\nDrop a 1-line citation comment at top of file.`,
+    },
+    aimode: {
+      label: "AI Mode (Google)",
+      prefix: `You are a coding assistant with access to live web search. Use search to verify formulas and best practices before writing code.\nTask:`,
+      suffix: ``,
+      styleHints: "Cite sources inline using [Source: URL] notation where you reference external knowledge. Prefer well-documented, widely-adopted patterns that appear in reputable sources.",
+      outputHint: "Before each code part, output a '📎 Sources checked:' section listing what you searched. Then output the code block.",
+      researchHint: `[Search-augmented research — use web search]\n① Search: "${rq1} algorithm formula site:arxiv.org OR site:ieee.org"\n② Search: "${rq2} web implementation best practice 2024"\n③ Search: "${rq3} calculation method javascript"\nCite all sources as [Source: URL] comments at top of file.`,
+    },
+  };
+
+  const ai = aiProfiles[form.aiService] || aiProfiles.claude;
+
+  // ... 기존 코드 ...
+
+  return `${ai.prefix}
+${ai.researchHint}
+
+[Task] Single-file offline web app | Runtime: file://
+App: ${form.appName||"App"}
+Goal: ${form.purpose||"Tool"}
+
+[Data Sync & Offline Policy]
+- DB Mode (API Sync): If the AX Portal API is unreachable (404/500/timeout), fallback immediately to local JSON file download/upload.
+- Local Fallback: Provide a clear UI button to export current state as JSON file and import JSON files for loading data when offline.
+- CDN Prohibition: Absolutely NO CDN usage. All libraries (SheetJS, etc.) must be embedded inline as minified script blocks. 
+- Independence: The resulting index.html must be fully functional without any internet connection.
+
+[Features]
+${form.coreFeatures||"(unspecified)"}
+- Header(top-right): [Save]→file export | [Load]→file import | [Reset]→defaults | [Help]→modal
+- Help modal: Usage guide + Background(Research results)${hasSample ? " + Sample Data(download btn; schema must match [Save])" : ""}
+${dbModeFeatures}
+${ioLine ? `- I/O: ${ioLine}` : ""}
+${layoutParts.length ? `- UI options: ${layoutParts.join(", ")}` : ""}
+
+[Output] ${pCount}-turn split. THIS turn: P1 only. Never truncate/trail "...".
+CRITICAL: Internally review and verify the code for any syntax or logical errors before outputting. Only print the verified, working code.
+Compress: no comments, minify CSS/HTML, short var names.
+${ai.outputHint}
+${pOutput.trim()}
+Each part: single \u0060\u0060\u0060html block.
+P1 prefix: "${msg.pfx}"
+After each block: "${msg.sfx}"
+
+[Constraints] 
+- Vanilla JS only — no React/Babel/Tailwind.
+- No External Dependencies: Every dependency (e.g., SheetJS) must be bundled as an inline <script> block.
+- Verification: The generated code must work perfectly in an air-gapped environment (file:// protocol).
+${browserCompatNote}
+${themeCSS}
+
+[UI] ${themeDesc} Default UI language MUST be ${currentPromptLang}. All UI elements (labels, buttons, modals, toasts) must be localized in ${currentPromptLang}.
+Surfaces: bg card elevated border
+Text: primary/secondary/muted accent | labels:11px/600/uppercase body:14px nums:mono/accent/600
+Card: r-16px 1px-border sh-card pad:20-24px gap:16px
+Header: 56px sticky blur-backdrop bottom-border
+Nav: sidebar or sticky tabs
+Input: elevated-bg 1px-border focus:accent+3px-glow r-8px
+Btn-primary: accent hover:lighter+up1+shadow active:scale(.97) r-10px
+Btn-ghost: elevated-bg muted hover:sur-3
+Table: th:11px/uppercase row-hover:sur-3 row-border
+Modal: elevated sh-pop r-16px dim-overlay | Toast: bottom-right slide-up:0.2s dismiss:2.5s
+Transitions: 0.15s; num-change→accent-flash:0.3s
+${ai.styleHints}
+${apiRules}
+
+[Quality] UI/toast:${currentPromptLang} | API try-catch + Offline Fallback | Number(v)||0 | complete logic
+${ai.suffix}`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STACK — 항상 Vanilla JS 고정
+// ═══════════════════════════════════════════════════════════════
+function runStackDetect() {
+  state.techStack = "vanilla";
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SYNTAX HIGHLIGHTING (Regex 기반)
+// ═══════════════════════════════════════════════════════════════
+function highlightSyntax(text) {
+  let html = escapeHTML(text);
+  
+  // 1. [태그] 하이라이트 (파란색)
+  html = html.replace(/(\[[A-Za-z0-9_\s/-]+\])/g, '<span style="color:#60a5fa; font-weight:bold;">$1</span>');
+  
+  // 2. P1:, P2: 등 파트 하이라이트 (주황색)
+  html = html.replace(/(P[1-5]:)/g, '<span style="color:#f59e0b; font-weight:bold;">$1</span>');
+  
+  // 3. XML 형태의 <role> 등 하이라이트 (보라색)
+  html = html.replace(/(&lt;\/?[\w_]+&gt;)/g, '<span style="color:#a78bfa;">$1</span>');
+  
+  // 4. 백틱 코드 블록 하이라이트 (에메랄드/약간의 배경)
+  html = html.replace(/(\u0060{1,3}[\s\S]*?\u0060{1,3})/g, '<span style="color:#34d399; background:rgba(255,255,255,0.06); border-radius:3px; padding:0 3px;">$1</span>');
+  
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER PROMPT
+// ═══════════════════════════════════════════════════════════════
+function renderPrompt() {
+  const el = document.getElementById("previewBody");
+  
+  // XSS를 막기 위해 내부에서 escapeHTML 처리를 거친 후 하이라이트 적용 (innerHTML 사용 안전성 확보)
+  el.innerHTML = highlightSyntax(generatePrompt(state));
+  
+  el.parentElement.classList.remove("updating");
+  void el.parentElement.offsetWidth;
+  el.parentElement.classList.add("updating");
+}
+
+function update() {
+  runStackDetect();
+  document.getElementById('f-dbMode').disabled = !state.io.apiSync;
+  renderPrompt();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EVENT BINDINGS (자동 추천 로직 포함)
+// ═══════════════════════════════════════════════════════════════
+let isDbModeManuallySet = false;
+let lastAutoRec = "single"; 
+let isPartsManuallySet = false; 
+let lastPartsAutoRec = "3"; 
+
+function setDbModeAutoIndicator(isAuto) {
+  const lbl = document.getElementById("dbModeAutoLabel");
+  if (!lbl) return;
+  if (isAuto) {
+    lbl.textContent = "AUTO";
+    lbl.style.color = "var(--suc)";
+    lbl.title = "자동 추천 중 (목적/기능 텍스트 기반)";
+  } else {
+    lbl.textContent = "MANUAL";
+    lbl.style.color = "var(--war)";
+    lbl.title = "수동 설정됨. 자동 추천값으로 되돌리면 AUTO로 복구됨.";
+  }
+}
+
+function setPartsAutoIndicator(isAuto) {
+  const lbl = document.getElementById("partsAutoLabel");
+  if (!lbl) return;
+  if (isAuto) {
+    lbl.textContent = "AUTO";
+    lbl.style.color = "var(--suc)";
+    lbl.title = "자동 추천 중 (복잡도/키워드 기반)";
+  } else {
+    lbl.textContent = "MANUAL";
+    lbl.style.color = "var(--war)";
+    lbl.title = "수동 설정됨. 자동 추천값으로 되돌리면 AUTO로 복구됨.";
+  }
+}
+
+function calcDbModeRec() {
+  const text = (state.purpose + " " + state.coreFeatures).toLowerCase();
+  let rec = "single";
+  if (/(이력|누적|히스토리|일지|목록|시계열|추이|기록|로그|대장|履歴|履历|记录|ログ|history|log|list|trend|timeline|series|累積|cumul|verlauf|verlaufs|historique|journal|tracking|monitor|feed|stream|audit)/.test(text)) rec = "list";
+  if (/(대안|비교|시나리오|버전|케이스|比較|比较|バージョン|场景|方案|case|scenario|version|alternative|compare|comparison|variant|szenario|variante|scénario|vergleich)/.test(text)) rec = "scenario";
+  return rec;
+}
+
+function calcPartsRec() {
+  let score = 2;
+  const text = (state.purpose + state.coreFeatures).toLowerCase();
+  const textLen = text.length;
+  
+  if (textLen > 50) score += 1;
+  if (textLen > 200) score += 1;
+  if (textLen > 500) score += 1;
+  if (state.io.xlsx) score += 1; 
+  if (state.io.apiSync) score += 1; 
+  if (state.dbMode === "list" || state.dbMode === "scenario") score += 1;
+  
+  // 기능 고도화: 복잡성 키워드 추가 감지 알고리즘 적용
+  if (/(결제|보안|3d|웹소켓|통신|암호화|canvas|webgl|socket|payment|security|auth|인증|로그인|login|jwt|oauth|realtime|실시간|동기화|동적)/i.test(text)) {
+    score += 1;
+  }
+
+  return String(Math.max(1, Math.min(5, score)));
+}
+
+function triggerHighlight(el) {
+  el.style.transition = "box-shadow 0.3s, border-color 0.3s";
+  el.style.boxShadow = "0 0 0 3px rgba(5,150,105,0.2)";
+  el.style.borderColor = "#059669";
+  setTimeout(() => {
+    el.style.boxShadow = "none";
+    el.style.borderColor = "var(--border)";
+  }, 800);
+}
+
+[["f-appName","appName"],["f-purpose","purpose"],["f-coreFeatures","coreFeatures"],["f-aiService","aiService"],["f-parts","parts"],["f-theme","theme"],["f-dbMode","dbMode"]].forEach(([id,key]) => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', e => {
+      if (id === 'f-dbMode') {
+        if (e.target.value === lastAutoRec) { isDbModeManuallySet = false; setDbModeAutoIndicator(true); } 
+        else { isDbModeManuallySet = true; setDbModeAutoIndicator(false); }
+      }
+      
+      if (id === 'f-parts') {
+        if (e.target.value === lastPartsAutoRec) { isPartsManuallySet = false; setPartsAutoIndicator(true); } 
+        else { isPartsManuallySet = true; setPartsAutoIndicator(false); }
+      }
+
+      state[key] = e.target.value;
+
+      if ((id === 'f-purpose' || id === 'f-coreFeatures') && state.io.apiSync && !isDbModeManuallySet) {
+          const rec = calcDbModeRec();
+          lastAutoRec = rec;
+          if (state.dbMode !== rec) {
+              state.dbMode = rec;
+              document.getElementById("f-dbMode").value = rec;
+              triggerHighlight(document.getElementById("f-dbMode"));
+          }
+          setDbModeAutoIndicator(true);
+      }
+
+      if (!isPartsManuallySet) {
+          const pRec = calcPartsRec();
+          lastPartsAutoRec = pRec;
+          if (state.parts !== pRec) {
+              state.parts = pRec;
+              document.getElementById("f-parts").value = pRec;
+              triggerHighlight(document.getElementById("f-parts"));
+          }
+          setPartsAutoIndicator(true);
+      }
+
+      update();
+    });
+  }
+});
+
+Object.keys(state.io).forEach(key => {
+  const el = document.getElementById("io-"+key);
+  if (el) {
+    el.addEventListener("change", e => {
+      state.io[key] = e.target.checked;
+      
+      if (!isPartsManuallySet) {
+         const pRec = calcPartsRec();
+         lastPartsAutoRec = pRec;
+         if (state.parts !== pRec) {
+             state.parts = pRec;
+             document.getElementById("f-parts").value = pRec;
+             triggerHighlight(document.getElementById("f-parts"));
+         }
+      }
+      
+      update();
+    });
+  }
+});
+
+Object.keys(state.layout).forEach(key => {
+  const el = document.getElementById("layout-"+key);
+  if (!el) return;
+  if (el.tagName === 'SELECT') {
+    el.addEventListener("change", e => {
+      state.layout[key] = e.target.value;
+      renderPrompt();
+    });
+  } else {
+    el.addEventListener("change", e => {
+      state.layout[key] = e.target.checked;
+      renderPrompt();
+    });
+  }
+});
+
+// 테마 선택 → 고대비(industrial)일 때 런타임 테마 전환 버튼 비활성화
+document.getElementById("f-theme").addEventListener("change", () => {
+  const wrap = document.getElementById("chk-themeToggle-wrap");
+  const chk  = document.getElementById("layout-themeToggle");
+  const isIndustrial = state.theme === "industrial";
+  if (wrap) wrap.style.opacity = isIndustrial ? "0.4" : "1";
+  if (chk)  { chk.disabled = isIndustrial; if (isIndustrial) { chk.checked = false; state.layout.themeToggle = false; } }
+  renderPrompt();
+});
+
+// ═══════════════════════════════════════════════════════════════
+// LANG SELECTOR
+// ═══════════════════════════════════════════════════════════════
+document.getElementById("langSelect").addEventListener("change", e => {
+  applyLang(e.target.value);
+  renderPrompt();
+  
+  // 언어 변경 시 검색어가 있다면 검색 결과 재렌더링, 없다면 빈 목록 텍스트 번역 반영
+  const query = document.getElementById("historySearch").value;
+  renderHistory(query);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// RESET ALL
+// ═══════════════════════════════════════════════════════════════
+document.getElementById("btnReset").addEventListener("click", () => {
+  if (confirm(i18n[currentLang].resetConfirm)) {
+    // 1. 상태 초기화
+    state.appName = "";
+    state.purpose = "";
+    state.coreFeatures = "";
+    state.aiService = "claude";
+    state.parts = "3";
+    state.theme = "dark";
+    state.dbMode = "single";
+    state.io = { apiSync:true, json:false, csv:false, xlsx:true, image:true, clipboard:false };
+    state.layout = { themeToggle:true, responsive:true, desktopOptimized:true, print:true, fontSize:false, offlineFallback:true, browserCompat:"modern" };
+    
+    // 2. DOM 초기화
+    document.getElementById("f-appName").value = "";
+    document.getElementById("f-purpose").value = "";
+    document.getElementById("f-coreFeatures").value = "";
+    document.getElementById("f-aiService").value = "claude";
+    document.getElementById("f-parts").value = "3";
+    document.getElementById("f-theme").value = "dark";
+    document.getElementById("f-dbMode").value = "single";
+    
+    ["apiSync","json","csv","xlsx","image","clipboard"].forEach(k => {
+      const el = document.getElementById("io-"+k);
+      if(el) el.checked = state.io[k];
+    });
+    ["themeToggle","responsive","desktopOptimized","print","fontSize","offlineFallback"].forEach(k => {
+      const el = document.getElementById("layout-"+k);
+      if(el) el.checked = state.layout[k];
+    });
+
+    // 3. AUTO 플래그 초기화
+    isDbModeManuallySet = false;
+    lastAutoRec = "single";
+    isPartsManuallySet = false;
+    lastPartsAutoRec = "3";
+    setDbModeAutoIndicator(true);
+    setPartsAutoIndicator(true);
+
+    update();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// COPY
+// ═══════════════════════════════════════════════════════════════
+let copyTimer = null;
+let originalNote = null;
+
+document.getElementById("btnCopy").addEventListener("click", async () => {
+  const prompt = generatePrompt(state);
+  const btn    = document.getElementById("btnCopy");
+  const note   = document.querySelector(".preview-note");
+
+  if (!originalNote) originalNote = note.innerHTML;
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(prompt);
+    } else {
+      const ta = document.createElement("textarea");
+      ta.value = prompt;
+      ta.style.cssText = "position:fixed;left:-999999px;top:-999999px";
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      if (!document.execCommand("copy")) throw new Error();
+      document.body.removeChild(ta);
+    }
+
+    btn.style.opacity = "0.3";
+    setTimeout(() => btn.style.opacity = "1", 150);
+
+    // 히스토리 자동 저장 (앱 이름 또는 목적이 있을 때만)
+    if (state.appName || state.purpose) {
+      histAdd({ ...state, io: {...state.io}, layout: {...state.layout} });
+    }
+
+    note.innerHTML = `<span style="color:var(--suc);font-weight:700;display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> ${i18n[currentLang].copyDone}</span>`;
+
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => {
+      note.innerHTML = originalNote;
+    }, 2200);
+
+  } catch {
+    alert(i18n[currentLang].copyFail);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// HISTORY (localStorage, max 100)
+// ═══════════════════════════════════════════════════════════════
+const HIST_KEY = "airgap_promptforge_history";
+const HIST_MAX = 100;
+
+function histLoad() {
+  try { return JSON.parse(localStorage.getItem(HIST_KEY) || "[]"); } catch { return []; }
+}
+
+function histSave(list) {
+  try { localStorage.setItem(HIST_KEY, JSON.stringify(list)); } catch {}
+}
+
+function histAdd(snapshot) {
+  const list = histLoad();
+  // 동일 appName + purpose 중복 저장 방지 (가장 최근 것만 유지)
+  const idx = list.findIndex(h => h.appName === snapshot.appName && h.purpose === snapshot.purpose);
+  if (idx !== -1) list.splice(idx, 1);
+  list.unshift({ ...snapshot, ts: Date.now() });
+  if (list.length > HIST_MAX) list.length = HIST_MAX;
+  histSave(list);
+  
+  // 현재 검색어가 있다면 필터링 유지하며 렌더
+  const query = document.getElementById("historySearch").value;
+  renderHistory(query);
+}
+
+function histDelete(ts) {
+  const list = histLoad().filter(h => h.ts !== ts);
+  histSave(list);
+  const query = document.getElementById("historySearch").value;
+  renderHistory(query);
+}
+
+function histClear() {
+  histSave([]);
+  document.getElementById("historySearch").value = "";
+  renderHistory();
+}
+
+function histRestore(snapshot) {
+  // state 복구
+  state.appName      = snapshot.appName      || "";
+  state.purpose      = snapshot.purpose      || "";
+  state.coreFeatures = snapshot.coreFeatures || "";
+  state.aiService    = snapshot.aiService    || "claude";
+  state.parts        = snapshot.parts        || "3";
+  state.theme        = snapshot.theme        || "dark";
+  state.dbMode       = snapshot.dbMode       || "single";
+  Object.assign(state.io,     snapshot.io     || {});
+  Object.assign(state.layout, snapshot.layout || {});
+
+  // DOM 동기화
+  const fieldMap = { appName:"f-appName", purpose:"f-purpose", coreFeatures:"f-coreFeatures",
+                     aiService:"f-aiService", parts:"f-parts", theme:"f-theme", dbMode:"f-dbMode" };
+  Object.entries(fieldMap).forEach(([k,id]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = state[k];
+  });
+  Object.keys(state.io).forEach(k => {
+    const el = document.getElementById("io-"+k);
+    if (el) el.checked = !!state.io[k];
+  });
+  Object.keys(state.layout).forEach(k => {
+    const el = document.getElementById("layout-"+k);
+    if (!el) return;
+    if (el.tagName === 'SELECT') el.value = state.layout[k];
+    else el.checked = !!state.layout[k];
+  });
+
+  // 자동 추천 상태 초기화
+  isDbModeManuallySet = false;
+  lastAutoRec = calcDbModeRec();
+  setDbModeAutoIndicator(true);
+  
+  isPartsManuallySet = false;
+  lastPartsAutoRec = calcPartsRec();
+  setPartsAutoIndicator(true);
+
+  update();
+
+  // 히스토리 패널 스크롤 올리기
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function fmt_ts(ts) {
+  const d = new Date(ts);
+  const pad = n => String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// 히스토리 검색 이벤트
+document.getElementById("historySearch").addEventListener("input", (e) => {
+  renderHistory(e.target.value);
+});
+
+function renderHistory(searchQuery = "") {
+  let list = histLoad();
+  
+  const countEl   = document.getElementById("historyCount");
+  const emptyEl   = document.getElementById("historyEmpty");
+  const listEl    = document.getElementById("historyList");
+  const footerEl  = document.getElementById("historyFooter");
+  const searchWrap = document.getElementById("historySearchWrap");
+
+  countEl.textContent = list.length;
+  
+  if (list.length === 0) {
+    emptyEl.style.display = "";
+    listEl.innerHTML = "";
+    footerEl.style.display = "none";
+    searchWrap.style.display = "none";
+    // 언어 토글 시 빈 목록 텍스트 동적 렌더링을 위해 i18n 적용
+    emptyEl.textContent = i18n[currentLang].historyEmpty;
+    return;
+  }
+  
+  // 검색어 필터링
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    list = list.filter(h => 
+      (h.appName || "").toLowerCase().includes(q) || 
+      (h.purpose || "").toLowerCase().includes(q)
+    );
+  }
+
+  emptyEl.style.display = list.length === 0 ? "" : "none";
+  if (list.length === 0 && searchQuery) {
+     emptyEl.textContent = i18n[currentLang].searchEmpty;
+  } else {
+     emptyEl.textContent = i18n[currentLang].historyEmpty;
+  }
+
+  footerEl.style.display = "";
+  searchWrap.style.display = "";
+
+  // XSS 공격 방지를 위해 생성 시 escapeHTML 적용 (innerHTML 기반 렌더링 보안 강화)
+  listEl.innerHTML = list.map(h => `
+    <div class="hist-item">
+      <div class="hist-main" data-ts="${h.ts}">
+        <div class="hist-name">${escapeHTML(h.appName) || "(이름 없음)"}</div>
+        <div class="hist-meta">
+          <span>${fmt_ts(h.ts)}</span>
+          <span class="hist-badge">${escapeHTML(h.aiService||"claude")}</span>
+          <span class="hist-badge">${escapeHTML(h.theme||"dark")}</span>
+          <span class="hist-badge">P${escapeHTML(h.parts||3)}</span>
+          ${h.io?.apiSync ? '<span class="hist-badge" style="color:var(--accent)">API</span>' : ''}
+        </div>
+      </div>
+      <button class="hist-del" data-ts="${h.ts}" title="삭제">×</button>
+    </div>`).join("");
+
+  // 이벤트 위임
+  listEl.querySelectorAll('.hist-main').forEach(el => {
+    el.onclick = () => histRestore(histLoad().find(h => h.ts === Number(el.dataset.ts)));
+  });
+  listEl.querySelectorAll('.hist-del').forEach(el => {
+    el.onclick = e => { e.stopPropagation(); histDelete(Number(el.dataset.ts)); };
+  });
+}
+
+// 히스토리 패널 토글
+document.getElementById("historyToggle").addEventListener("click", () => {
+  const body    = document.getElementById("historyBody");
+  const chevron = document.getElementById("historyChevron");
+  const isOpen  = body.classList.toggle("open");
+  chevron.classList.toggle("open", isOpen);
+});
+
+document.getElementById("btnHistClear").addEventListener("click", () => {
+  if (confirm("히스토리를 모두 삭제할까요?")) histClear();
+});
+
+// ═══════════════════════════════════════════════════════════════
+// TXT DOWNLOAD
+// ═══════════════════════════════════════════════════════════════
+document.getElementById("btnTxt").addEventListener("click", () => {
+  const prompt = generatePrompt(state);
+  const blob   = new Blob([prompt], { type:"text/plain;charset=utf-8" });
+  const url    = URL.createObjectURL(blob);
+  const a      = document.createElement("a");
+  a.href = url;
+  a.download = (state.appName || "prompt") + ".txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// HELP MODAL CONTROL (A11y & Focus Trap)
+// ═══════════════════════════════════════════════════════════════
+let previousActiveElement = null;
+
+document.getElementById("btnHelp").addEventListener("click", () => {
+  previousActiveElement = document.activeElement;
+  document.getElementById("helpModal").style.display = "flex";
+  
+  // 모달 밖 배경 스크롤 잠금 (A11y)
+  document.body.style.overflow = "hidden";
+  
+  // 모달 열릴 때 포커스 이동
+  const closeBtn = document.getElementById("closeHelp");
+  if(closeBtn) closeBtn.focus();
+});
+
+function closeModal() {
+  document.getElementById("helpModal").style.display = "none";
+  document.body.style.overflow = ""; // 배경 스크롤 해제
+  if(previousActiveElement) previousActiveElement.focus();
+}
+
+document.getElementById("closeHelp").addEventListener("click", closeModal);
+
+window.addEventListener("click", (e) => {
+  const modal = document.getElementById("helpModal");
+  if (e.target === modal) closeModal();
+});
+
+// Focus Trap 로직
+document.getElementById("helpModal").addEventListener("keydown", function(e) {
+  const focusableEls = this.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  const firstFocusableEl = focusableEls[0];
+  const lastFocusableEl = focusableEls[focusableEls.length - 1];
+
+  if (e.key === 'Tab' || e.keyCode === 9) {
+    if (e.shiftKey) { // Shift + Tab
+      if (document.activeElement === firstFocusableEl) {
+        lastFocusableEl.focus();
+        e.preventDefault();
+      }
+    } else { // Tab
+      if (document.activeElement === lastFocusableEl) {
+        firstFocusableEl.focus();
+        e.preventDefault();
+      }
+    }
+  }
+  
+  if (e.key === 'Escape') {
+    closeModal();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+runStackDetect();
+renderPrompt();
+applyLang('en');
+renderHistory();
+setDbModeAutoIndicator(true);
+setPartsAutoIndicator(true);
+</script>
+</body>
+</html>
