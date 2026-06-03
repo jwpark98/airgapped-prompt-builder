@@ -1,4 +1,4 @@
-# AirGap PromptForge v4.1 - 오프라인 웹 앱 프롬프트 생성기
+# AirGap PromptForge - 오프라인 웹 앱 프롬프트 생성기
 
 ■ 개요
   망분리(Air-Gapped) 환경에서 외부 라이브러리(CDN) 없이 단일 HTML 파일로
